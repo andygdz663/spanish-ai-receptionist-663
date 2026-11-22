@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Receptionist — Business Setup</title>
+<style>
+:root{font-family:Inter,system-ui,Arial,sans-serif;color:#eaf0fa;background:#0b1220}*{box-sizing:border-box}body{margin:0;padding:24px}main{max-width:850px;margin:auto}h1{margin-bottom:4px}p,small{color:#a6b4ca}section{background:#172337;border:1px solid #30415b;border-radius:14px;padding:20px;margin:18px 0}label{display:block;margin:13px 0 6px;font-weight:600}input,select,textarea{width:100%;background:#0c1628;color:white;border:1px solid #435574;border-radius:8px;padding:11px;font:inherit}textarea{min-height:90px}input[type=checkbox]{width:auto}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.days{display:flex;gap:12px;flex-wrap:wrap}button{background:#4b84f2;color:white;border:0;padding:13px 20px;border-radius:9px;font-weight:700;cursor:pointer}button:hover{background:#3572e8}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#091322;border-radius:8px;padding:15px;max-height:260px;overflow:auto}footer{padding:18px 0;color:#a6b4ca}@media(max-width:600px){.grid{grid-template-columns:1fr}body{padding:12px}}
+</style></head><body><main>
+<h1>AI Receptionist Spanish Dashboard</h1><p>Reusable onboarding for multiple business types. Demo configuration only — no live booking integration.</p>
+<form id="setup">
+<section><h2>1. Business identity</h2>
+<label>Business name<input name="name" required value="VVS Smilez"></label>
+<label>Industry<select name="industry"><option value="dental">Dental clinic</option><option value="barber">Barbershop</option><option value="salon">Beauty salon / spa</option><option value="automotive">Auto repair</option><option value="restaurant">Restaurant</option><option value="medical">Medical clinic</option><option value="legal">Law office</option><option value="realestate">Real estate</option><option value="home_services">Home services</option><option value="other">Other</option></select></label>
+<label>Business description<textarea name="description" placeholder="What does this business do?"></textarea></label>
+<div class="grid"><label>Address<input name="address" placeholder="Street, city, country"></label><label>Contact phone<input name="phone" placeholder="Business phone"></label></div>
+</section>
+<section><h2>2. Business hours</h2><label>Open days</label><div class="days">
+<label><input type="checkbox" name="day" value="Mon" checked> Mon</label><label><input type="checkbox" name="day" value="Tue" checked> Tue</label><label><input type="checkbox" name="day" value="Wed" checked> Wed</label><label><input type="checkbox" name="day" value="Thu" checked> Thu</label><label><input type="checkbox" name="day" value="Fri" checked> Fri</label><label><input type="checkbox" name="day" value="Sat"> Sat</label><label><input type="checkbox" name="day" value="Sun"> Sun</label></div>
+<div class="grid"><label>Opens<input name="opening" type="time" value="09:00"></label><label>Closes<input name="closing" type="time" value="17:00"></label></div>
+<label>Time zone<input name="timezone" value="America/Tijuana" placeholder="IANA time zone"></label>
+</section>
+<section><h2>3. Services and pricing</h2>
+<label>Services (one per line: Service — minutes)<textarea name="services">Limpieza dental — 60
+Consulta general — 30
+Valoración de ortodoncia — 45
+Blanqueamiento dental — 90</textarea></label>
+<label>Price policy<select name="pricingMode"><option value="ask">Quote after evaluation / verification</option><option value="configured">Approved prices only</option><option value="sample">Labeled sample demo prices</option></select></label>
+</section>
+<section><h2>4. Voice and greeting</h2>
+<div class="grid"><label>Language<select name="language"><option value="es">Spanish (Mexico)</option><option value="en">English</option><option value="bilingual">Bilingual</option></select></label>
+<label>Voice tone<select name="tone"><option value="professional">Professional and friendly</option><option value="casual">Casual</option><option value="formal">Formal</option></select></label></div>
+<label>Greeting (optional)<textarea name="greeting" placeholder="Leave blank for automatic greeting"></textarea></label>
+</section>
+<section><h2>5. Booking and human handoff</h2>
+<label>Booking behavior<select name="bookingMode"><option value="demo">Simulated appointments</option><option value="calendar">Real calendar (integration required)</option><option value="lead">Collect requests only</option><option value="none">Information only</option></select></label>
+<label>Human assistance<select name="handoff"><option value="message">Offer to take a message</option><option value="transfer">Transfer (integration required)</option><option value="callback">Callback request (integration required)</option></select></label>
+</section>
+<section><h2>6. Knowledge and policies</h2><label>Frequently asked questions and approved answers<textarea name="faq" placeholder="Parking, payment methods, cancellation policy..."></textarea></label>
+<label>Special instructions<textarea name="notes" placeholder="Rules, limitations, escalation guidance"></textarea></label></section>
+<button type="button" id="download">Download JSON configuration</button> <button type="button" id="previewButton">Preview JSON</button>
+</form><section><h2>Configuration preview</h2><pre id="preview">Click Preview JSON to see your configuration.</pre></section>
+<footer>Demo only. No information is sent to a server. Downloaded JSON stays on your computer unless you share it.</footer>
+</main><script>
+const form=document.getElementById('setup');
+function config(){const data=new FormData(form);const v=k=>String(data.get(k)||'').trim();const services=v('services').split(/\r?\n/).map(s=>{const m=s.match(/^(.*?)\s*[—-]\s*(\d+)\s*(?:min(?:utes?)?)?$/i);return m?{name:m[1].trim(),durationMinutes:Number(m[2])}:{name:s.trim(),durationMinutes:null}}).filter(s=>s.name);
+return {business:{name:v('name'),industry:v('industry'),description:v('description'),address:v('address'),phone:v('phone'),timezone:v('timezone')},hours:{days:data.getAll('day'),opening:v('opening'),closing:v('closing')},services,pricingMode:v('pricingMode'),language:v('language'),tone:v('tone'),bookingMode:v('bookingMode'),handoff:v('handoff'),greeting:v('greeting')||('Hola, gracias por llamar a '+v('name')+'. Soy su asistente virtual. ¿En qué puedo ayudarle?'),faq:v('faq'),notes:v('notes'),demo:true};}
+document.getElementById('previewButton').onclick=()=>document.getElementById('preview').textContent=JSON.stringify(config(),null,2);
+document.getElementById('download').onclick=()=>{if(!form.reportValidity())return;const blob=new Blob([JSON.stringify(config(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='business-receptionist-config.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+</script></body></html>
+
+[executed on device: DESKTOP-IIR5DEQ (83ac23ee-a23e-4154-9532-72904cebe50a)]
