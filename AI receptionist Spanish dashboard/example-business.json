@@ -1,0 +1,49 @@
+{
+  "business": {
+    "name": "VVS Smilez",
+    "industry": "dental",
+    "description": "Fictional dental clinic for receptionist demos",
+    "address": "",
+    "phone": "",
+    "timezone": "America/Tijuana"
+  },
+  "hours": {
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "opening": "09:00",
+    "closing": "17:00"
+  },
+  "services": [
+    {
+      "name": "Limpieza dental",
+      "durationMinutes": 60
+    },
+    {
+      "name": "Consulta general",
+      "durationMinutes": 30
+    },
+    {
+      "name": "Valoración de ortodoncia",
+      "durationMinutes": 45
+    },
+    {
+      "name": "Blanqueamiento dental",
+      "durationMinutes": 90
+    }
+  ],
+  "pricingMode": "ask",
+  "language": "es",
+  "tone": "professional",
+  "bookingMode": "demo",
+  "handoff": "message",
+  "faq": "",
+  "notes": "All appointments and clinic details are simulated.",
+  "demo": true
+}
+
+[executed on device: DESKTOP-IIR5DEQ (83ac23ee-a23e-4154-9532-72904cebe50a)]
