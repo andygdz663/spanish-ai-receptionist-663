@@ -1,1 +1,86 @@
+name: LiveKit Authentication Check
 
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  auth-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check LiveKit Cloud credentials
+        env:
+          LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
+          LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
+          LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import json
+          import time
+          import hmac
+          import hashlib
+          import base64
+          import urllib.request
+          import urllib.error
+
+          def encode(obj):
+              data = json.dumps(obj, separators=(",", ":")).encode()
+              return base64.urlsafe_b64encode(data).rstrip(b"=")
+
+          url = os.getenv("LIVEKIT_URL", "")
+          key = os.getenv("LIVEKIT_API_KEY", "")
+          secret = os.getenv("LIVEKIT_API_SECRET", "")
+
+          if not all([url, key, secret]):
+              raise SystemExit("FAIL: Missing credentials")
+
+          if any(v != v.strip() for v in [url, key, secret]):
+              raise SystemExit("FAIL: Credentials contain surrounding whitespace")
+
+          if not url.startswith("wss://"):
+              raise SystemExit("FAIL: Invalid LiveKit URL")
+
+          now = int(time.time())
+          header = encode({"alg": "HS256", "typ": "JWT"})
+          payload = encode({
+              "iss": key,
+              "sub": "github-auth-diagnostic",
+              "iat": now,
+              "nbf": now,
+              "exp": now + 300,
+              "video": {"roomList": True}
+          })
+
+          message = header + b"." + payload
+          signature = base64.urlsafe_b64encode(
+              hmac.new(secret.encode(), message, hashlib.sha256).digest()
+          ).rstrip(b"=")
+
+          token = (message + b"." + signature).decode()
+          endpoint = url.replace("wss://", "https://", 1).rstrip("/")
+          endpoint += "/twirp/livekit.RoomService/ListRooms"
+
+          request = urllib.request.Request(
+              endpoint,
+              data=b"{}",
+              headers={
+                  "Authorization": "Bearer " + token,
+                  "Content-Type": "application/json"
+              },
+              method="POST"
+          )
+
+          try:
+              with urllib.request.urlopen(request, timeout=15) as response:
+                  print("PASS: LiveKit Cloud authentication works")
+                  print("HTTP:", response.status)
+          except urllib.error.HTTPError as error:
+              print("FAIL: LiveKit returned HTTP", error.code)
+              raise SystemExit(1)
+          except Exception as error:
+              print("FAIL:", type(error).__name__)
+              raise SystemExit(1)
+          PY
