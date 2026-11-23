@@ -8,13 +8,7 @@
     "timezone": "America/Tijuana"
   },
   "hours": {
-    "days": [
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri"
-    ],
+    "days": ["Mon", "Tue", "Wed", "Thu", "Fri"],
     "opening": "09:00",
     "closing": "17:00"
   },
